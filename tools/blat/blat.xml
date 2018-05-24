@@ -1,0 +1,219 @@
+<?xml version='1.0' encoding='utf-8'?>
+<tool id="blat" name="BLAT" version="1.0">
+  <description>is a pairwise sequence alignment algorithm</description>
+  <macros>
+      <import>macros.xml</import>
+  </macros>
+  <requirements>
+    <requirement type="package" version="36">blat</requirement>
+  </requirements>
+  <version_command>blat|head -n 1</version_command>
+  <command><![CDATA[
+    blat
+    #if $database_source.database_source_select == 'fasta_db'
+      '${database_source.database.fields.path}'
+    #else if $database_source.database_source_select == 'twobit_db'
+      #if $database_source.range
+        '${database_source.database.fields.path}:${database_source.range}'
+      #else
+        '${database_source.database.fields.path}'
+      #end if
+    #else
+      '${database_source.database}'
+    #end if
+
+    '${query}'
+    -t=${databaseType.t}
+    -q=${$databaseType.q}
+    -tileSize=${databaseType.tileSize}
+    -minMatch=${databaseType.minMatch}
+    -minIdentity=${databaseType.minIdentity}
+
+    #if str($stepSize)
+      '-stepSize=${stepSize}'
+    #end if
+
+    #if $oneOff
+      -oneOff=1
+    #end if
+
+    #if str($minScore)
+      '-minScore=${minScore}'
+    #end if
+
+    '-maxGap=${maxGap}'
+
+    #if str($repMatch)
+      '-repMatch=${repMatch}'
+    #end if
+
+    #if $maskChoice.mask
+      -mask=${maskChoice.mask}
+    #else if $maskChoice.repeats
+      -repeats=${maskChoice.repeats}
+    #end if
+    #if $qMask
+      -qMask=${qMask}
+    #end if
+    #if str($dots)
+      '-dots=${dots}'
+    #end if
+
+    ${trimT}
+    ${noTrimA}
+    ${trimHardA}
+    ${fastMap}
+    ${fine}
+
+    #if str($maxIntron)
+     '-maxIntron=${maxIntron}'
+    #end if
+
+    ${extendThroughN}
+
+    -out=${out}
+
+    '${output}'
+  ]]></command>
+
+  <inputs>
+    <conditional name="database_source">
+      <param name="database_source_select" type="select" label="Database source">
+        <option value="fasta_db">Locally installed FASTA database</option>
+        <option value="twobit_db">Locally installed 2bit database</option>
+        <option value="file">FASTA or 2bit file from your history</option>
+      </param>
+      <when value="fasta_db">
+        <param name="database" type="select" label="Select a FASTA database">
+          <options from_data_table="all_fasta">
+            <filter type="sort_by" column="2" />
+            <validator type="no_options" message="No FASTA database available" />
+          </options>
+        </param>
+      </when>
+      <when value="twobit_db">
+        <param name="database" type="select" label="Select a 2bit database">
+          <options from_data_table="lastz_seqs">
+            <filter type="sort_by" column="1" />
+            <validator type="no_options" message="No 2bit database available" />
+          </options>
+        </param>
+        <param name="range" type="text" optional="true" value="" label="Restrict the search space to this genomic range in the sequence database" help="Format = 'chr1:250000-260000' (i.e. name:startposition-endposition)">
+          <validator type="regex" message="Invalid range">\w+:\d+-\d+</validator>
+        </param>
+      </when>
+      <when value="file">
+        <param name="database" type="data" format="fasta,twobit" label="Database file" help="FASTA or 2bit format" />
+      </when>
+    </conditional>
+    <conditional name="databaseType">
+      <param argument="-t" type="select" label="Database type">
+        <option value="dna" selected="true">DNA sequence (dna)</option>
+        <option value="prot">Protein sequence (prot)</option>
+        <option value="dnax">DNA sequence translated in six frames to protein (dnax)</option>
+      </param>
+      <when value="dna">
+        <param argument="-q" type="select" label="Select the query type">
+          <option value="dna" selected="true">DNA sequence (dna)</option>
+          <option value="rna">RNA sequence (rna)</option>
+        </param>
+        <expand macro="titlesize_minmatch_minindentity_dna" />
+      </when>
+      <when value="prot">
+        <param argument="-q" type="select" label="Select the query type">
+          <option value="prot">Protein sequence (prot)</option>
+        </param>
+        <expand macro="titlesize_minmatch_minindentity_prot" />
+      </when>
+      <when value="dnax">
+        <param argument="-q" type="select" label="Select the query type">
+          <option value="prot">Protein sequence (prot)</option>
+          <option value="dnax">DNA sequence translated in six frames to protein (dnax)</option>
+          <option value="rnax">DNA sequence translated in three frames to protein (rnax)</option>
+        </param>
+        <expand macro="titlesize_minmatch_minindentity_prot" />
+      </when>
+    </conditional>
+    <param name="query" type="data" format="fasta,twobit" label="Query" help="FASTA or 2bit format" />
+    <param argument="-stepSize" type="integer" value="" optional="true" label="Spacing between tiles" help="Default is tileSize">
+      <validator type="in_range" min="1" />
+    </param>
+    <param argument="-oneOff" type="boolean" truevalue="-oneOff" falsevalue="" label="If set, this allows one mismatch in tile and still triggers an alignments" />
+    <param argument="-minScore" type="integer" value="30" label="Minimum score" help="It is the matches minus the mismatches minus some sort of gap penalty" />
+    <param argument="-maxGap" type="integer" value="2" min="0" max="20" label="Maximum gap between tiles in a clump" help="Usually set from 0 to 3. Only relevant for minMatch > 1" />
+    <param argument="-repMatch" type="integer" value="" optional="true" label="Number of repetitions of a tile allowed before it is marked as overused" help="Typically this is 256 for tileSize 12, 1024 for tileSize 11, 4096 for tileSize 10. Also affected by stepSize. When stepSize is halved repMatch is doubled to compensate" />
+    <conditional name="maskChoice">
+      <param argument="-mask" type="select" label="Mask out repeats in database sequences" help="Alignments won't be started in masked region but may extend through it in nucleotide searches. Masked areas are ignored completely in protein or translated searches">
+        <expand macro="mask_type" />
+      </param>
+      <when value="">
+        <param argument="-repeats" type="select" label="Select repeat type if matches in repeat areas should be reported separately from matches in other areas">
+          <expand macro="mask_type" />
+        </param>
+      </when>
+      <when value="lower" />
+      <when value="upper" />
+    </conditional>
+    <param argument="-qMask" type="select" label="Mask out repeats in query sequences">
+        <expand macro="mask_type" />
+    </param>
+    <param argument="-dots" type="integer" value="" optional="true" label="Output a dot every N sequences in log" help="Dots show program's progress" />
+    <param argument="-trimT" type="boolean" truevalue="-trimT" falsevalue="" label="Trim leading poly-T" />
+    <param argument="-noTrimA" type="boolean" truevalue="-noTrimA" falsevalue="" label="Don't trim trailing poly-A" />
+    <param argument="-trimHardA" type="boolean" truevalue="-trimHardA" falsevalue="" label="Remove poly-A tail from qSize and alignments in .psl output" />
+    <param argument="-fastMap" type="boolean" truevalue="-fastMap" falsevalue="" label="Run for fast DNA/DNA remapping" help="It does not allow introns and require high %ID. Query sizes must not exceed 5000" />
+    <param argument="-fine" type="boolean" truevalue="-fine" falsevalue="" label="Refine search for small initial and terminal exons" help="For high-quality mRNAs. Not recommended for ESTs" />
+    <param argument="-maxIntron" type="integer" value="750000" optional="true" label="Maximum intron size" />
+    <param argument="-extendThroughN" type="boolean" truevalue="-extendThroughN" falsevalue="" label="Allow extension of alignment through large blocks of N's" />
+    <param name="out" type="select" label="Select output file format (-out)">
+      <expand macro="format_output" />
+    </param>
+  </inputs>
+  <outputs>
+    <data name="output" format="txt" label="${tool.name} on ${on_string}: alignment">
+      <change_format>
+        <when input="out" value="psl -noHead" format="tabular" />
+        <when input="out" value="pslx -noHead" format="tabular" />
+        <when input="out" value="axt" format="axt" />
+        <when input="out" value="maf" format="maf" />
+        <when input="out" value="blast8" format="tabular" />
+      </change_format>
+    </data>
+  </outputs>
+  <tests>
+    <test>
+      <param name="database_source_select" value="file" />
+      <param name="database" value="databasetest1.fasta" ftype="fasta" />
+      <param name="q" value="dna" />
+      <param name="t" value="dna" />
+      <param name="query" value="input83.fasta" ftype="fasta" />
+      <param name="tileSize" value="8" />
+      <param name="minMatch" value="2" />
+      <param name="stepSize" value="8" />
+      <param name="oneOff" value="false" />
+      <param name="minScore" value="30" />
+      <param name="maxGap" value="2" />
+      <param name="mask" value="lower" />
+      <param name="qMask" value="lower" />
+      <param name="trimT" value="true" />
+      <param name="noTrimA" value="false" />
+      <param name="fine" value="false" />
+      <param name="maxIntron" value="750000" />
+      <param name="extendThroughN" value="false" />
+      <param name="out" value="blast8" />
+      <output name="output" file="outputtest1.txt" />
+    </test>
+  </tests>
+  <help>
+**What it does**
+
+BLAT produces two major classes of alignments:
+
+- at the DNA level between two sequences that are of 95% or greater identity, but which may include large inserts;
+- at the protein or translated DNA level between sequences that are of 80% or greater identity and may also include large inserts.
+
+The output of BLAT is flexible. By default it is a simple tab-delimited file which describes the alignment, but which does not include the sequence of the alignment itself. Optionally it can produce BLAST and WU-BLAST compatible output as well as a number of other formats.
+
+  </help>
+  <expand macro="citations" />
+</tool>
