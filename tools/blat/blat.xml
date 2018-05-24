@@ -117,13 +117,13 @@
           <option value="dna" selected="true">DNA sequence (dna)</option>
           <option value="rna">RNA sequence (rna)</option>
         </param>
-        <expand macro="titlesize_minmatch_minindentity_dna" />
+        <expand macro="titlesize_minmatch_minidentity_dna" />
       </when>
       <when value="prot">
         <param argument="-q" type="select" label="Select the query type">
           <option value="prot">Protein sequence (prot)</option>
         </param>
-        <expand macro="titlesize_minmatch_minindentity_prot" />
+        <expand macro="titlesize_minmatch_minidentity_prot" />
       </when>
       <when value="dnax">
         <param argument="-q" type="select" label="Select the query type">
@@ -131,7 +131,7 @@
           <option value="dnax">DNA sequence translated in six frames to protein (dnax)</option>
           <option value="rnax">DNA sequence translated in three frames to protein (rnax)</option>
         </param>
-        <expand macro="titlesize_minmatch_minindentity_prot" />
+        <expand macro="titlesize_minmatch_minidentity_prot" />
       </when>
     </conditional>
     <param name="query" type="data" format="fasta,twobit" label="Query" help="FASTA or 2bit format" />
