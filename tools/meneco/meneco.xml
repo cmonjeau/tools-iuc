@@ -18,10 +18,10 @@ meneco.py
     ${enumerate} > '${output}'
     ]]></command>
     <inputs>
-        <param argument="--draftnet" type="data" format="sbml,xml" label="draft network" help="metabolic network in SBML format" />
-        <param argument="--repairnet" type="data" optional='true' format="sbml,xml" label="repair network" help="metabolic network in SBML format" />
-        <param argument="--seeds" type="data" format="sbml,xml" label="seeds" help="seeds in SBML format"/>
-        <param argument="--targets" type="data" format="sbml,xml" label="targets" help="targets in SBML format" />
+        <param argument="--draftnet" type="data" format="sbml" label="draft network" help="metabolic network in SBML format" />
+        <param argument="--repairnet" type="data" optional='true' format="sbml" label="repair network" help="metabolic network in SBML format" />
+        <param argument="--seeds" type="data" format="sbml" label="seeds" help="seeds in SBML format"/>
+        <param argument="--targets" type="data" format="sbml" label="targets" help="targets in SBML format" />
         <param argument="--enumerate" type="boolean" truevalue="--enumerate" falsevalue="" help="enumerate all minimal completions" />
     </inputs>
     <outputs>
@@ -29,9 +29,9 @@ meneco.py
     </outputs>
     <tests>
         <test>
-            <param name="draftnet" ftype="xml" value="ectocyc.sbml" />
-            <param name="seeds" ftype="xml" value="seeds.sbml" />
-            <param name="targets" ftype="xml" value="targets.sbml" />
+            <param name="draftnet" ftype="sbml" value="ectocyc.sbml" />
+            <param name="seeds" ftype="sbml" value="seeds.sbml" />
+            <param name="targets" ftype="sbml" value="targets.sbml" />
             <output name="output" file="result.txt" compare="sim_size"/>
         </test>
     </tests>
