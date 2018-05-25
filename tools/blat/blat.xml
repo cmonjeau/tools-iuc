@@ -93,7 +93,7 @@
       </when>
       <when value="twobit_db">
         <param name="database" type="select" label="Select a 2bit database">
-          <options from_data_table="lastz_seqs">
+          <options from_data_table="blat_2bits">
             <filter type="sort_by" column="1" />
             <validator type="no_options" message="No 2bit database available" />
           </options>
@@ -202,6 +202,28 @@
       <param name="extendThroughN" value="false" />
       <param name="out" value="blast8" />
       <output name="output" file="outputtest1.txt" />
+    </test>
+    <test>
+        <param name="database_source_select" value="twobit_db" />
+        <param name="database" value="phiX174" />
+        <param name="q" value="dna" />
+        <param name="t" value="dna" />
+        <param name="query" value="phiX_split.fasta" ftype="fasta" />
+        <param name="tileSize" value="8" />
+        <param name="minMatch" value="2" />
+        <param name="stepSize" value="8" />
+        <param name="oneOff" value="false" />
+        <param name="minScore" value="30" />
+        <param name="maxGap" value="2" />
+        <param name="mask" value="lower" />
+        <param name="qMask" value="lower" />
+        <param name="trimT" value="true" />
+        <param name="noTrimA" value="false" />
+        <param name="fine" value="false" />
+        <param name="maxIntron" value="750000" />
+        <param name="extendThroughN" value="false" />
+        <param name="out" value="blast8" />
+        <output name="output" file="outputtest2.txt" />
     </test>
   </tests>
   <help>

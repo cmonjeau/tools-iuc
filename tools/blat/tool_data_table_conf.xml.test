@@ -3,6 +3,6 @@
     <!-- Locations of 2bit sequence files for use in BLAT -->
     <table name="blat_2bits" comment_char="#">
         <columns>value, name, path</columns>
-        <file path="tool-data/blat_2bits.loc" />
+        <file path="${__HERE__}/test-data/blat_2bits.loc" />
     </table>
 </tables>
