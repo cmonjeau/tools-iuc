@@ -107,9 +107,6 @@
             </conditional>
             <param name="zip" value="True" />
             <output name="logol_results_archive" compare="sim_size" file="logol_results.zip" />
-            <!--output_collection name="logol_results" type="list" count="1">
-                <element name="seq1" ftype="xml" file="seq1.xml" />
-            </output_collection-->
         </test>
         <test>
             <param name="s" value="primer.fasta" />
@@ -123,9 +120,6 @@
             <param name="all" value="True" />
             <param name="zip" value="True" />
             <output name="logol_results_archive" compare="sim_size" file="logol_results_multi_format.zip" />
-            <!--output_collection name="logol_results" type="list" count="1">
-                <element name="seq1" ftype="xml" file="seq1.xml" />
-            </output_collection-->
         </test>
     </tests>
 
